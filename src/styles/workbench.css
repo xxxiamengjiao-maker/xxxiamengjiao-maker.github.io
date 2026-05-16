@@ -195,31 +195,39 @@
   background: var(--surface-container-low);
 }
 
-.task-list__magic-rings {
-  position: relative;
-  flex-shrink: 0;
-  width: 72px;
-  height: 40px;
+.task-list__star-border {
+  flex: 0 0 auto;
+  align-self: center;
+  width: fit-content;
+  max-width: 100%;
   border-radius: 12px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--primary-fixed) 85%, transparent);
 }
 
-.task-list__progress-label {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
+.task-list__star-border.star-border-container {
+  display: inline-flex;
+  width: fit-content;
+  height: fit-content;
+}
+
+.task-list__star-border .inner-content {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
+  width: auto;
+  padding: 6px 10px;
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: 0.02em;
+  border-radius: 11px;
+  background: var(--primary-fixed);
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
   color: var(--primary);
+  text-align: center;
+}
+
+.task-list__progress-label {
   white-space: nowrap;
-  pointer-events: none;
 }
 
 .task-list__icon--done {

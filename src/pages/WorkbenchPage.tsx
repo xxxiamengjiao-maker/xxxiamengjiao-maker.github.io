@@ -3,7 +3,7 @@ import { app, workbenchStats, activeCustomers, analysisTasks, potentialDemands, 
 import { StatCard } from '@/components/dashboard/StatCard'
 import { Icon } from '@/components/Icon'
 import DecryptedText from '@/components/DecryptedText'
-import MagicRings from '@/components/MagicRings'
+import StarBorder from '@/components/StarBorder'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -115,34 +115,16 @@ export function WorkbenchPage() {
             {analysisTasks.map((task) => (
               <li key={task.title} className="task-list__item">
                 {task.status === 'progress' ? (
-                  <div className="task-list__magic-rings">
-                    <MagicRings
-                      color="#A855F7"
-                      colorTwo="#6366F1"
-                      ringCount={6}
-                      speed={1}
-                      attenuation={10}
-                      lineThickness={2}
-                      baseRadius={0.35}
-                      radiusStep={0.1}
-                      scaleRate={0.1}
-                      opacity={1}
-                      blur={0}
-                      noiseAmount={0.1}
-                      rotation={0}
-                      ringGap={1.5}
-                      fadeIn={0.7}
-                      fadeOut={0.5}
-                      followMouse={false}
-                      mouseInfluence={0.2}
-                      hoverScale={1.2}
-                      parallax={0.05}
-                      clickBurst={false}
-                    />
+                  <StarBorder
+                    as="div"
+                    className="task-list__star-border"
+                    color="magenta"
+                    speed="5s"
+                  >
                     <span className="task-list__progress-label" aria-hidden>
                       AI解析中
                     </span>
-                  </div>
+                  </StarBorder>
                 ) : (
                   <Icon
                     name={task.status === 'done' ? 'check_circle' : 'schedule'}
