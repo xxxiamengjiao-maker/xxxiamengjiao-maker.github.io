@@ -520,24 +520,37 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  min-width: 0;
 }
 
 .persona-radar__title {
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   font-size: 18px;
   font-weight: 700;
   color: var(--on-surface);
 }
 
+.persona-radar__chart-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+  padding: 4px 8px 8px;
+}
+
 .persona-radar__svg {
   width: 100%;
-  max-width: 280px;
-  margin: 0 auto;
+  max-width: min(100%, 320px);
+  height: auto;
+  aspect-ratio: 1;
   display: block;
+  overflow: visible;
 }
 
 .persona-radar__label {
-  font-size: 11px;
+  font-size: 12px;
   fill: #64748b;
   font-family: var(--font-sans);
 }
