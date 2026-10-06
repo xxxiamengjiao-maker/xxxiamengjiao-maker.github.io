@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI行家助手 · 企微卡片Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+      background: #ededed;
+      display: flex; justify-content: center;
+      align-items: flex-start; min-height: 100vh; padding: 30px 16px;
+    }
+    .phone {
+      width: 360px; background: #f5f5f5; border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.18); overflow: hidden;
+      border: 5px solid #222; display: flex; flex-direction: column; height: 700px;
+    }
+    .phone-bar {
+      background: #fff; text-align: center; font-size: 13px; font-weight: 600;
+      padding: 10px 0 6px; color: #111; border-bottom: 1px solid #eee;
+      letter-spacing: 1px; flex-shrink: 0;
+    }
+    .chat-area {
+      flex: 1; padding: 14px 12px;
+      display: flex; flex-direction: column; gap: 10px;
+      overflow-y: auto; background: #f5f5f5;
+    }
+    .wecom-card {
+      background: #fff; border-radius: 10px;
+      overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.10); width: 100%;
+      display: flex; flex-direction: column;
+    }
+    .card-header { padding: 14px 16px 12px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+    .card-title {
+      font-size: 15px; font-weight: 700; color: #111;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .card-title .badge {
+      font-size: 11px; font-weight: 500; color: #fff;
+      background: #1677ff; border-radius: 4px; padding: 1px 6px;
+    }
+    .card-sub { font-size: 12.5px; color: #888; margin-top: 6px; line-height: 1.7; }
+    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; flex-shrink: 0; }
+    .menu-btn {
+      background: #1677ff; color: #fff; border: none; border-radius: 8px;
+      padding: 11px 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s; text-align: center;
+    }
+    .menu-btn:hover { background: #0958d9; transform: translateY(-1px); }
+    .menu-btn:active { transform: scale(0.97); }
+    .menu-btn.other { background: #fff; color: #1677ff; border: 1.5px solid #1677ff; }
+    .menu-btn.other:hover { background: #e6f0ff; }
+    .sub-panel { display: none; flex-direction: column; }
+    .sub-panel.active { display: flex; }
+    .sub-grid { display: flex; flex-direction: column; padding: 8px 12px 4px; gap: 6px; overflow-y: auto; max-height: 520px; }
+    .sub-grid::-webkit-scrollbar { width: 3px; }
+    .sub-grid::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+    .sub-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: 8px; border: none; cursor: pointer;
+      background: #f7f8fa; border: 1px solid #ebebeb;
+      text-align: left; transition: all 0.15s;
+    }
+    .sub-btn:hover { background: #eef3ff; border-color: #adc6ff; }
+    .sub-btn.hot { border-color: #ffd591; background: #fffbe6; }
+    .sub-btn.hot:hover { background: #fff1cc; }
+    .sub-btn-icon { font-size: 16px; flex-shrink: 0; }
+    .sub-btn-body { flex: 1; }
+    .sub-btn-title { font-size: 13.5px; font-weight: 600; color: #111; }
+    .sub-btn-desc { font-size: 12px; color: #888; margin-top: 2px; line-height: 1.5; }
+    .sub-hot-tag {
+      font-size: 10px; color: #d46b08; background: #fff7e6;
+      border: 1px solid #ffd591; border-radius: 3px;
+      padding: 1px 5px; flex-shrink: 0; white-space: nowrap;
+    }
+    .sub-divider {
+      font-size: 11px; color: #bbb; padding: 2px 2px 0;
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    .sub-divider::before, .sub-divider::after { content: ''; flex: 1; height: 1px; background: #ebebeb; }
+    .suggest-panel { display: none; flex-direction: column; }
+    .suggest-panel.active { display: flex; }
+    .suggest-label { padding: 10px 16px 6px; font-size: 11.5px; color: #aaa; flex-shrink: 0; }
+    .suggest-list {
+      display: flex; flex-direction: column; padding: 0 12px 10px; gap: 7px;
+      overflow-y: auto; max-height: 460px;
+    }
+    .suggest-list::-webkit-scrollbar { width: 3px; }
+    .suggest-list::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+    .suggest-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 13px; border-radius: 8px;
+      background: #f7f8fa; border: 1px solid #ebebeb; flex-shrink: 0;
+    }
+    .suggest-item.hot { border-color: #ffd591; background: #fffbe6; }
+    .suggest-item.action { border-color: #b7eb8f; background: #f6ffed; }
+    .suggest-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+    .suggest-body { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .suggest-main { display: flex; align-items: flex-start; gap: 6px; }
+    .suggest-text { font-size: 13px; color: #222; line-height: 1.6; flex: 1; }
+    .suggest-text code {
+      background: #e8f1ff; color: #1677ff; border-radius: 3px; padding: 0 5px;
+      font-size: 12.5px; font-family: inherit; font-weight: 500; white-space: nowrap;
+    }
+    .hot-tag {
+      font-size: 10px; color: #d46b08; background: #fff7e6;
+      border: 1px solid #ffd591; border-radius: 3px;
+      padding: 1px 5px; flex-shrink: 0; white-space: nowrap; margin-top: 3px;
+    }
+    .action-tag {
+      font-size: 10px; color: #389e0d; background: #f6ffed;
+      border: 1px solid #b7eb8f; border-radius: 3px;
+      padding: 1px 5px; flex-shrink: 0; white-space: nowrap; margin-top: 3px;
+    }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag { font-size: 11px; color: #595959; background: #f0f0f0; border-radius: 3px; padding: 1px 6px; white-space: nowrap; }
+    .example-row {
+      font-size: 11.5px; color: #888; line-height: 1.6;
+      border-left: 2px solid #d9d9d9; padding-left: 7px; margin-top: 1px;
+    }
+    .example-row code {
+      background: #e8f1ff; color: #1677ff; border-radius: 3px; padding: 0 4px;
+      font-size: 11.5px; font-family: inherit; font-weight: 500;
+    }
+    .suggest-divider {
+      font-size: 11px; color: #bbb; padding: 2px 2px 0;
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    .suggest-divider::before, .suggest-divider::after { content: ''; flex: 1; height: 1px; background: #ebebeb; }
+    .card-footer {
+      display: flex; border-top: 1px solid #f0f0f0; padding: 8px 12px; gap: 8px; flex-shrink: 0;
+    }
+    .footer-btn {
+      flex: 1; padding: 8px; border-radius: 6px;
+      font-size: 12.5px; cursor: pointer; border: none;
+      transition: all 0.15s; text-align: center;
+    }
+    .footer-btn.secondary { background: #f5f5f5; color: #666; }
+    .footer-btn.secondary:hover { background: #e8e8e8; }
+    .footer-btn.primary { background: #1677ff; color: #fff; }
+    .footer-btn.primary:hover { background: #0958d9; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
+    .fade-up { animation: fadeUp 0.22s ease forwards; }
+  </style>
+</head>
+<body>
+<div class="phone">
+  <div class="phone-bar">10:57</div>
+  <div style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+    <div class="chat-area">
+      <div class="wecom-card">
+        <div class="card-header">
+          <div class="card-title">
+            AI行家助手
+            <span class="badge" id="domainBadge" style="display:none"></span>
+          </div>
+          <div class="card-sub" id="cardSub">你好！今天需要帮你查什么？<br/>客户、订单、商品、发票……选一个开始吧 👇</div>
+        </div>
+        <div class="menu-grid" id="menuGrid">
+          <button class="menu-btn" onclick="selectDomain('customer')">🔍 找客户</button>
+          <button class="menu-btn" onclick="selectDomain('product')">📦 查商品</button>
+          <button class="menu-btn" onclick="selectDomain('order')">🗒️ 查订单</button>
+          <button class="menu-btn" onclick="selectDomain('purchase')">🛒 采购查询</button>
+          <button class="menu-btn" onclick="selectDomain('finance')">🧾 对账开票</button>
+          <button class="menu-btn other" onclick="selectDomain('other')">➕ 其他</button>
+        </div>
+        <div class="sub-panel" id="subPanel">
+          <div class="suggest-label">👇 选择你需要的功能</div>
+          <div class="sub-grid" id="subGrid"></div>
+          <div class="card-footer">
+            <button class="footer-btn secondary" onclick="goHome()">返回菜单</button>
+          </div>
+        </div>
+        <div class="suggest-panel" id="suggestPanel">
+          <div class="suggest-label">💬 你可以这样问我</div>
+          <div class="suggest-list" id="suggestList"></div>
+          <div class="card-footer">
+            <button class="footer-btn secondary" onclick="goSub()">返回上级</button>
+            <button class="footer-btn primary" onclick="goHome()">返回菜单</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const domains = {
+    customer: {
+      badge: "找客户",
+      suggests: [
+        { icon: "👤", hot: true, text: '输入客户名称，发送 <code>查客户 XX公司</code>' },
+        { icon: "🛍️", text: '输入客户编码，发送 <code>查商品池 C001</code>，查询 / 下架该客户商品池 SKU' }
+      ]
+    },
+    product: {
+      badge: "查商品",
+      suggests: [
+        { icon: "🔎", hot: true, text: '发送关键词、SKU 或商品图片，AI 自动找货' },
+        { icon: "📦", text: '输入 SKU + 城市，发送 <code>查商品 SKUXX 上海</code>，查交期及库存' },
+        { icon: "📄", text: '输入 SKU，发送 <code>查文件 SKUXX</code>，获取商品资料文件' },
+        { icon: "✅", text: '输入品牌名称，发送 <code>查授权 XX品牌</code>，获取品牌授权文件' }
+      ]
+    },
+    order: {
+      badge: "查订单",
+      suggests: [
+        { icon: "🚚", hot: true, text: '输入订单号，发送 <code>查物流 SOXXXX</code>，查履约 / 物流进度' },
+        { icon: "🔢", hot: true, text: '输入客户编码，发送 <code>查订单号 C001</code>，查该客户名下的销售订单号' },
+        { icon: "🔗", hot: true, text: '输入采购单号 / VC 送货单号，发送 <code>关联单号 XXXX</code>，互查采购单号 / VC 送货单号 / SAP 销售订单号' },
+        { icon: "📋", hot: true, text: '输入送货单号，发送 <code>查送货单 XXXX</code>，查送货单详情' },
+        { icon: "➕", dividerBefore: true, dividerText: "其他操作", text: '输入销售单号，发送 <code>创建交货单 SOXXXX</code>' },
+        { icon: "❌", text: '输入销售单号 / DN 单号，发送 <code>取消交货单 XXXX</code>' }
+      ]
+    },
+    purchase: {
+      badge: "采购查询",
+      suggests: [
+        { icon: "📋", hot: true, text: '输入采购单号，发送 <code>查采购单 XXXX</code>，查采购单详情及状态' },
+        { icon: "⏳", hot: true, text: '输入采购单号，发送 <code>查到货时间 XXXX</code>，查预计到货时间' },
+        { icon: "📦", hot: true, text: '输入采购单号，发送 <code>查随货资料 XXXX</code>，获取随货文件' }
+      ]
+    },
+    finance: {
+      badge: "对账开票",
+      suggests: [
+        { icon: "🔍", hot: true, text: '输入客户编码，发送 <code>查信用 C001</code>，查信用额度 / 逾期情况' },
+        { icon: "🧾", hot: true, text: '输入订单号，发送 <code>查发票 SOXXXX</code>，查发票状态 / 进度' },
+        {
+          icon: "➕", action: true, dividerBefore: true, dividerText: "开票操作",
+          text: '输入订单号，发送 <code>申请开票 XXXX</code>，支持单独 / 合并开票',
+          tags: ['SAP销售单', 'OMS销售单', 'SAP交货单', 'OMS交货单', 'OMS外围单', '其他格式'],
+          example: '例：<code>申请开票 1500021012 1010096815 合并</code>'
+        }
+      ]
+    },
+    other: {
+      badge: "其他",
+      subDomains: [
+        { key: 'find_person', icon: '👥', title: '找人',       desc: '找产线 / 销售客服 / 仓库对接人 / 值班人员', hot: true },
+        { key: 'knowledge',   icon: '📚', title: '找知识',     desc: '公司制度 · 人事行政政策 · 工业品产品知识 · IT', hot: true },
+        { key: 'personal',    icon: '👤', title: '查个人信息',  desc: '考勤 / 假期 / 报销 / 津贴', hot: true },
+        { key: 'oa',          icon: '📋', title: 'OA 申请',    desc: '请假 · 补卡 · 会议 · 用印 · 合同签署', hot: true },
+        { key: 'ticket',      icon: '🎫', title: '工单',       desc: '工单查询 / 一句话发工单', hot: false },
+        { key: 'collab',      icon: '🤝', title: '协同',       desc: '协同查询 / 创建合同盖章申请', hot: false },
+        { key: 'material',    icon: '📁', title: '资料',       desc: '资料查询 / 获取模板中心文件', hot: false },
+        { key: 'digital',     icon: '🖥️', title: '数智化入口', desc: 'PRA / AI 开发者平台地址查询', hot: false }
+      ]
+    }
+  };
+
+  const subDomainDetails = {
+    find_person: {
+      badge: "找人",
+      suggests: [
+        { icon: "🏭", hot: true, text: '发送 <code>找产线 XX工厂</code>，查找产线人员联系方式' },
+        { icon: "🧑‍💼", hot: true, text: '发送 <code>找销售 XX公司</code>，根据客户名称找对应销售 / 客服' },
+        { icon: "🏬", text: '发送 <code>找仓库 XX仓库</code>，根据仓库名称找仓库对接人' },
+        { icon: "🕐", text: '发送 <code>查值班</code>，查找当前值班人员' }
+      ]
+    },
+    knowledge: {
+      badge: "找知识",
+      suggests: [
+        {
+          icon: "📜", hot: true,
+          text: '发送 <code>查制度 关键词</code>，查公司制度 / 人事行政政策',
+          example: '例：<code>查制度 年假规则</code> · <code>查制度 报销流程</code>'
+        },
+        {
+          icon: "📦", hot: true,
+          text: '发送 <code>查产品知识 关键词</code>，查询工业品领域产品知识',
+          example: '例：<code>查产品知识 断路器选型</code>'
+        },
+        {
+          icon: "💻",
+          text: '发送 <code>查IT知识 关键词</code>，查 IT 系统 / 工具相关问题',
+          example: '例：<code>查IT知识 VPN怎么连</code>'
+        }
+      ]
+    },
+    personal: {
+      badge: "查个人信息",
+      suggests: [
+        { icon: "🕐", hot: true, text: '发送 <code>查考勤</code>，查询本月考勤记录' },
+        { icon: "🏖️", hot: true, text: '发送 <code>查假期</code>，查询剩余假期余额' },
+        { icon: "💰", hot: true, text: '发送 <code>查报销</code>，查询报销进度 / 记录' },
+        { icon: "🎁", hot: true, text: '发送 <code>查津贴</code>，查询津贴发放情况' }
+      ]
+    },
+    oa: {
+      badge: "OA 申请",
+      suggests: [
+        {
+          icon: "🏖️", hot: true,
+          text: '直接说想请什么假、什么时间，AI 自动创建草稿',
+          example: '例：帮我请假2个小时 明天下午'
+        },
+        {
+          icon: "⏰", hot: true,
+          text: '直接说要补哪天哪个时段的卡，AI 自动创建草稿',
+          example: '例：帮我补卡 昨天上午 忘打了'
+        },
+        {
+          icon: "📅", hot: true, dividerBefore: true, dividerText: "会议",
+          text: '说清时间和主题，AI 帮你预约会议',
+          example: '例：预约会议 明天14:00 季度复盘'
+        },
+        {
+          icon: "✏️",
+          text: '说清会议和要改的内容，AI 帮你修改',
+          example: '例：把明天的复盘会议改到15:00'
+        },
+        {
+          icon: "❌",
+          text: '说清哪个会议，AI 帮你取消',
+          example: '例：取消明天14:00的季度复盘会议'
+        },
+        {
+          icon: "🔍",
+          text: '发送"查我的会议"，查看近期会议安排'
+        },
+        {
+          icon: "🖊️", hot: true, dividerBefore: true, dividerText: "用印 · 签署",
+          text: '发对账单文件 + 客户号，AI 自动发起用印申请',
+          example: '例：发送文件后输入 A790013 06-30 客户对账单用印申请'
+        },
+        {
+          icon: "📝", hot: true,
+          text: '发合同文件 + 客户号金额，AI 自动发起签署申请',
+          example: '例：发送文件后输入 A3425041 300元 客户合同签署申请'
+        }
+      ]
+    },
+    ticket: {
+      badge: "工单",
+      suggests: [
+        { icon: "🔍", text: '发送 <code>查工单</code>，进入工单总入口，查询工单状态' },
+        {
+          icon: "➕", action: true,
+          text: '直接描述问题，发送 <code>创建工单 问题描述</code>，一句话发工单',
+          example: '例：<code>创建工单 客户C001反馈商品破损，需要处理</code>'
+        }
+      ]
+    },
+    collab: {
+      badge: "协同",
+      suggests: [
+        { icon: "🔍", text: '发送 <code>查协同</code>，进入协同总入口，查询协同任务' },
+        {
+          icon: "🤝", action: true,
+          text: '输入销售订单号，发送 <code>盖章申请 SOXXXX</code>，创建合同盖章协同',
+          example: '例：<code>盖章申请 1500021012</code>'
+        }
+      ]
+    },
+    material: {
+      badge: "资料",
+      suggests: [
+        { icon: "📁", text: '发送 <code>查资料</code>，进入资料总入口，查询资料文件' },
+        {
+          icon: "📄", action: true,
+          text: '发送 <code>查模板 关键词</code>，从模板中心获取对应文件',
+          example: '例：<code>查模板 合同模板</code>'
+        }
+      ]
+    },
+    digital: {
+      badge: "数智化入口",
+      suggests: [
+        { icon: "🖥️", text: '发送 <code>PRA地址</code>，获取 PRA 平台入口链接' },
+        { icon: "🤖", text: '发送 <code>AI开发者平台</code>，获取 AI 开发者平台入口链接' }
+      ]
+    }
+  };
+
+  let currentDomain = null;
+
+  function selectDomain(key) {
+    currentDomain = key;
+    const d = domains[key];
+    document.getElementById("domainBadge").textContent = d.badge;
+    document.getElementById("domainBadge").style.display = "inline-block";
+    document.getElementById("cardSub").style.display = "none";
+    document.getElementById("menuGrid").style.display = "none";
+    if (key === 'other') {
+      renderSubGrid(d.subDomains);
+      document.getElementById("subPanel").classList.add("active");
+    } else {
+      renderSuggests(d.suggests);
+      document.getElementById("suggestPanel").classList.add("active");
+    }
+  }
+
+  function renderSubGrid(subDomains) {
+    const grid = document.getElementById("subGrid");
+    grid.innerHTML = "";
+    let hotShown = false, otherShown = false;
+    subDomains.forEach(s => {
+      if (s.hot && !hotShown) {
+        const div = document.createElement("div");
+        div.className = "sub-divider"; div.textContent = "高频常用";
+        grid.appendChild(div); hotShown = true;
+      }
+      if (!s.hot && !otherShown) {
+        const div = document.createElement("div");
+        div.className = "sub-divider"; div.textContent = "其他功能";
+        grid.appendChild(div); otherShown = true;
+      }
+      const btn = document.createElement("button");
+      btn.className = "sub-btn fade-up" + (s.hot ? " hot" : "");
+      btn.innerHTML = `
+        <span class="sub-btn-icon">${s.icon}</span>
+        <div class="sub-btn-body">
+          <div class="sub-btn-title">${s.title}</div>
+          <div class="sub-btn-desc">${s.desc}</div>
+        </div>
+        ${s.hot ? '<span class="sub-hot-tag">高频</span>' : ''}
+      `;
+      btn.onclick = () => selectSubDomain(s.key);
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectSubDomain(key) {
+    const d = subDomainDetails[key];
+    document.getElementById("domainBadge").textContent = d.badge;
+    document.getElementById("subPanel").classList.remove("active");
+    renderSuggests(d.suggests);
+    document.getElementById("suggestPanel").classList.add("active");
+  }
+
+  function renderSuggests(suggests) {
+    const list = document.getElementById("suggestList");
+    list.innerHTML = "";
+    suggests.forEach(s => {
+      if (s.dividerBefore) {
+        const div = document.createElement("div");
+        div.className = "suggest-divider";
+        div.textContent = s.dividerText || "其他操作";
+        list.appendChild(div);
+      }
+      const item = document.createElement("div");
+      item.className = "suggest-item fade-up" + (s.hot ? " hot" : "") + (s.action ? " action" : "");
+      let tagHtml = s.tags ? `<div class="tag-row">${s.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>` : "";
+      let exampleHtml = s.example ? `<div class="example-row">${s.example}</div>` : "";
+      let sideTag = s.hot ? `<span class="hot-tag">高频</span>` : s.action ? `<span class="action-tag">操作</span>` : "";
+      item.innerHTML = `
+        <span class="suggest-icon">${s.icon}</span>
+        <div class="suggest-body">
+          <div class="suggest-main">
+            <span class="suggest-text">${s.text}</span>
+            ${sideTag}
+          </div>
+          ${tagHtml}
+          ${exampleHtml}
+        </div>
+      `;
+      list.appendChild(item);
+    });
+    list.scrollTop = 0;
+  }
+
+  function goSub() {
+    document.getElementById("suggestPanel").classList.remove("active");
+    if (currentDomain === 'other') {
+      renderSubGrid(domains.other.subDomains);
+      document.getElementById("subPanel").classList.add("active");
+      document.getElementById("domainBadge").textContent = "其他";
+    } else {
+      goHome();
+    }
+  }
+
+  function goHome() {
+    document.getElementById("menuGrid").style.display = "grid";
+    document.getElementById("subPanel").classList.remove("active");
+    document.getElementById("suggestPanel").classList.remove("active");
+    document.getElementById("domainBadge").style.display = "none";
+    document.getElementById("cardSub").style.display = "block";
+    currentDomain = null;
+  }
+</script>
+</body>
+</html>
